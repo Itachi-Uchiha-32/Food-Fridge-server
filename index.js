@@ -48,6 +48,7 @@ const client = new MongoClient(uri, {
 // Middleware to verify Firebase ID token
 const verifyFirebaseToken = async (req, res, next) => {
   const authHeader = req.headers?.authorization;
+  console.log(authHeader)
   if (!authHeader?.startsWith('Bearer ')) {
     return res.status(401).send({ message: 'unauthorized access' });
   }
