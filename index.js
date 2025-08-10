@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const admin = require("firebase-admin");
@@ -5,10 +6,27 @@ const serviceAccount = require("./firebase-admin-service-key.json");
 const app = express();
 const cookieParser = require('cookie-parser');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-require('dotenv').config();
+
 
 const port = process.env.PORT || 3000;
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+const allowedOrigins = [
+  'http://localhost:5173',                  
+  'https://assignment-11-90db9.web.app' 
+];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    // allow requests with no origin (like Postman, curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -35,6 +53,7 @@ const verifyFirebaseToken = async (req, res, next) => {
   }
 
   const token = authHeader.split(' ')[1];
+  console.log(token )
   try {
     const decoded = await admin.auth().verifyIdToken(token);
     req.decoded = decoded;
@@ -54,7 +73,7 @@ const verifyTokenEmail = (req, res, next) => {
 
 // Main DB Logic
 async function run() {
-  await client.connect();
+  //await client.connect();
   const db = client.db('foodExpiryTrackerSystem');
   const foodCollection = db.collection('foods');
   const tipCollection = db.collection('foodTips');
